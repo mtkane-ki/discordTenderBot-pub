@@ -3,6 +3,8 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
+  "email": "michael@kaneinformatics.io",
+  "url": "https://github.com/mtkane-ki/discordTenderBot-pub",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -12,5 +14,5 @@
     "dotenv": "^8.2.0"
   },
   "author": "Michael Kane",
-  "license": "Apache 2.0"
+  "license": "Apache-2.0"
 }
