@@ -11,6 +11,6 @@
     "discord.js": "^11.5.1",
     "dotenv": "^8.2.0"
   },
-  "author": "",
-  "license": "ISC"
+  "author": "Michael Kane",
+  "license": "Apache 2.0"
 }
