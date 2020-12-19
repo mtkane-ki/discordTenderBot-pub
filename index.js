@@ -90,8 +90,7 @@ bot.on("message", async (msg) => {
           `Your store number preference of ${args} has been ${writeType}!`
         );
         break;
-      }
-      //console.log(msg.author)
+      }      
       break;
     }
 
