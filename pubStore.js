@@ -22,7 +22,7 @@ async function main(storeID) {
       return savings;
     }
   });
-  console.log(deliDeals);
+  //console.log(deliDeals);
   const subItems = deliDeals.filter(function (item) {
     if (item.title.toLowerCase().includes("sub")) {
       //console.log(item);
@@ -41,16 +41,20 @@ async function main(storeID) {
       return subItem;
     }
   });
-  //console.log(saleSub)
+
+  if (saleSub.length === 0) {
+    return undefined;
+  } else {
+    const trimmedRes = (({ title, description, finalPrice }) => ({
+      title,
+      description,
+      finalPrice,
+    }))(saleSub[0]);
+
+    return trimmedRes;
+  }
+
   //const subTitle = saleSub[0].title
-
-  const trimmedRes = (({ title, description, finalPrice }) => ({
-    title,
-    description,
-    finalPrice,
-  }))(saleSub[0]);
-
-  return trimmedRes;
 }
 
 async function getStores(zipCode) {

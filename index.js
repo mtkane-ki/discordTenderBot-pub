@@ -5,8 +5,7 @@ const TOKEN = process.env.TOKEN;
 const pubStore = require("./pubStore");
 const fs = require("fs");
 const userActions = require("./userStoreActions");
-const { getUser, reloadUserStore } = require("./userStoreActions");
-const prefix = "!"
+const prefix = "!";
 
 bot.login(TOKEN);
 
@@ -18,67 +17,85 @@ bot.on("message", async (msg) => {
   if (msg.author.bot) return;
   if (!msg.content.startsWith(prefix)) return;
   const commandBody = msg.content.slice(prefix.length);
-  const args = commandBody.split(' ');
-  const command = args.shift().toLowerCase()
+  const args = commandBody.split(" ");
+  const command = args.shift().toLowerCase();
   //console.log(commandBody)
   //console.log(command)
 
+  switch (command) {
+    case "pubsubme": {
+      //console.info(Object.entries(msg))
+      //console.info(msg.author)
+      //console.log(messageStr)
+      const users = await userActions.reloadUserStore();
+      const user = await userActions.getUser(users, msg.author.id);
+      if (user === undefined) {
+        msg.reply(
+          "I'm sorry, I don't know what your preferred store number is. Please submit it with !pubstoresave"
+        );
+        break;
+      }
 
-  switch (command) {    
-    case "pubsubme":
-
-    //console.info(Object.entries(msg))
-    //console.info(msg.author)
-    //console.log(messageStr)
-    const users = await userActions.reloadUserStore()
-    
-    const userIndex = await getUser(users,msg.author.id)
-    if (userIndex === -1){
-      msg.reply("I'm sorry, I don't know what your preferred store number is. Please submit it with !pubstoresave")
+      const queryRes = await pubStore.queryStore(user.storeNumber);
+      //console.log(queryRes);
+      if (queryRes) {
+        msg.reply(JSON.stringify(queryRes, null, 2), { code: "JSON" }); //this sends beack to channel and tags the requesting user
+      } else {
+        msg.reply(
+          `Store number ${user.storeNumber} invalid or no sub is on sale`
+        );
+      }
       break;
     }
 
-    const queryRes = await pubStore.queryStore(users[userIndex].storeNumber);
-    //console.log(queryRes);
-   
-    msg.reply(JSON.stringify(queryRes, null, 2), { code: "JSON" }); //this sends beack to channel and tags the requesting user
-    
+    case "pubstorelookup": {
+      if (args.length === 0 || isNaN(args)) {
+        msg.reply(
+          "Please provide a zip code as an argument with !pubstorelookup"
+        );
+        break;
+      }
+      const storeRes = await pubStore.getStores(args);
+      if (storeRes.length === 0) {
+        msg.reply(
+          "The requested zipcode is invalid. Please try another zipcode"
+        );
+        break;
+      }
+      msg.reply(
+        `These are the 5 stores nearest your zipcode. Please select a store number, and say "!pubstoresave xxxx", xxxx being your preferred store number`
+      );
+      msg.reply(JSON.stringify(storeRes, null, 2), { code: "JSON" });
       break;
-    case "pubstorelookup":
+    }
 
-      if (args.length === 0 || isNaN(args)){
-        msg.reply("Please provide a zip code as an argument with !pubstorelookup")
-        break;
-      }
-      const storeRes = await pubStore.getStores(args)
-      if (storeRes.length === 0){
-        msg.reply("The requested zipcode is invalid. Please try another zipcode")
-        break;
-      }
-      msg.reply(`These are the 5 stores nearest your zipcode. Please select a store number, and say "!pubstoresave xxxx", xxxx being your preferred store number`)    
-      msg.reply(JSON.stringify(storeRes, null, 2), {code: "JSON"})
+    case "pubstoresave": {
+      const users = await userActions.reloadUserStore();
+      const user = await userActions.getUser(users, msg.author.id);
 
-      break;
-    case "pubstoresave":
-      const usersSave = await userActions.reloadUserStore()
-      const userIndexSave = await getUser(usersSave,msg.author.id)
-      //console.log(userIndexSave)      
-      const storeQuery = pubStore.queryStore(args[0])
-      if (storeQuery.length === 0){
-        msg.reply(`The store number ${args} is invalid. Please try valid store number`)
+      const storeQuery = pubStore.queryStore(args[0]);
+      if (!storeQuery) {
+        msg.reply(
+          `The store number ${args} is invalid. Please try valid store number`
+        );
         break;
       }
-      if (args.length === 0 || isNaN(args)){
-        msg.reply("Please provide a store number along with this command.")
+      if (args.length === 0 || isNaN(parseInt(args[0]))) {
+        msg.reply("Please provide a store number along with this command.");
         break;
       }
-      //console.log(msg.author)        
-      const writeType = userActions.writeUserStore(msg.author,args[0])
-      msg.reply(`Your store number preference of ${args} has been ${writeType}!`)
+      if (user) {
+        const writeType = userActions.writeUserStore(msg.author, args[0]);
+        msg.reply(
+          `Your store number preference of ${args} has been ${writeType}!`
+        );
+        break;
+      }
+      //console.log(msg.author)
       break;
+    }
 
     case "pubsubhelp":
-
       msg.channel.send(
         `The PubSubBot has 4 commands, *!pubsubme*, *!pubstorelookup*, *!pubstoresave*, and *!pubstorehelp* \n
         **!pubstorelookup:** This command is run to look up nearby publix stores. You provide it with a zipcode. \n
@@ -89,9 +106,9 @@ bot.on("message", async (msg) => {
          \`!pubsubme\` \n
         **!pubsubhelp:** This command displays this help file \n
         \`!pubsubhelp\`        
-      `)
-      
+      `
+      );
+
       break;
   }
-  
-  });
+});

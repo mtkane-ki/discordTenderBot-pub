@@ -19,25 +19,29 @@ function writeUserStore(userData, storeNumber) {
     storeNumber: storeNumber,
   };
   const userStore = reloadUserStore();
-  
-  const checkExistIndex = getUser(userStore, mergedUserData.id);
-  if (checkExistIndex === -1) {
-    userStore.push(mergedUserData);
-    const writeType = "Saved"
-    fs.writeFileSync("./userStores.json", JSON.stringify(userStore, null, 2));
-    return writeType    
-  }
-  else{
-    userStore[checkExistIndex] = mergedUserData
-    const writeType = "Updated"
-    fs.writeFileSync("./userStores.json", JSON.stringify(userStore, null, 2));
-    return writeType
-  }
-  
 
+  const userIndex = getUserIndex(userStore, mergedUserData.id);
+  if (userIndex === -1) {
+    userStore.push(mergedUserData);
+    fs.writeFileSync("./userStores.json", JSON.stringify(userStore, null, 2));
+    return "Saved";
+  } else {
+    userStore[userIndex] = mergedUserData;
+    fs.writeFileSync("./userStores.json", JSON.stringify(userStore, null, 2));
+    return "Updated";
+  }
 }
 
 function getUser(users, userID) {
+  const user = users.find(function (user) {
+    if (user.id === userID) {
+      return true;
+    }
+  });
+  return user;
+}
+
+function getUserIndex(users, userID) {
   const userIndex = users.findIndex(function (user) {
     if (user.id === userID) {
       return true;
@@ -46,4 +50,4 @@ function getUser(users, userID) {
   return userIndex;
 }
 
-module.exports = { reloadUserStore, writeUserStore, getUser };
+module.exports = { reloadUserStore, writeUserStore, getUser, getUserIndex };
