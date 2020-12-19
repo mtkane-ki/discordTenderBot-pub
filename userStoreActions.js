@@ -5,9 +5,8 @@ function reloadUserStore() {
     if (err) {
       throw err;
     }
-  });
-  const fileObj = JSON.parse(fileRaw);
-  return fileObj;
+  });  
+  return JSON.parse(fileRaw);
 }
 
 function writeUserStore(userData, storeNumber) {
