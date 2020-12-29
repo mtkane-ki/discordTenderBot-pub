@@ -45,10 +45,11 @@ async function main(storeID) {
   if (saleSub.length === 0) {
     return undefined;
   } else {
-    const trimmedRes = (({ title, description, finalPrice }) => ({
+    const trimmedRes = (({ title, description, finalPrice, imageUrl }) => ({
       title,
       description,
       finalPrice,
+      imageUrl
     }))(saleSub[0]);
 
     return trimmedRes;

@@ -6,6 +6,7 @@ const pubStore = require("./pubStore");
 const fs = require("fs");
 const userActions = require("./userStoreActions");
 const prefix = "!";
+const he = require("he");
 
 bot.login(TOKEN);
 
@@ -39,7 +40,23 @@ bot.on("message", async (msg) => {
       const queryRes = await pubStore.queryStore(user.storeNumber);
       //console.log(queryRes);
       if (queryRes) {
-        msg.reply(JSON.stringify(queryRes, null, 2), { code: "JSON" }); //this sends beack to channel and tags the requesting user
+        msg.reply({
+          embed: {
+            color: 3447003,
+            title: "Today's sale sub!",
+            fields: [
+              { name: "Sale Sub:", value: he.decode(String(queryRes.title)) },
+              {
+                name: "Sub Details:",
+                value: he.decode(String(queryRes.description)),
+              },
+              { name: "Price:", value: he.decode(String(queryRes.finalPrice)) },
+            ],
+            image: {
+              url: String(queryRes.imageUrl),
+            },
+          },
+        });
       } else {
         msg.reply(
           `Store number ${user.storeNumber} invalid or no sub is on sale`
@@ -49,7 +66,7 @@ bot.on("message", async (msg) => {
     }
 
     case "pubstorelookup": {
-      if (args.length === 0 || isNaN(args)) {
+      if (args.length === 0 || isNaN(ParseInt(args[0]))) {
         msg.reply(
           "Please provide a zip code as an argument with !pubstorelookup"
         );
@@ -90,23 +107,39 @@ bot.on("message", async (msg) => {
           `Your store number preference of ${args} has been ${writeType}!`
         );
         break;
-      }      
+      }
       break;
     }
 
     case "pubsubhelp":
-      msg.channel.send(
-        `The PubSubBot has 4 commands, *!pubsubme*, *!pubstorelookup*, *!pubstoresave*, and *!pubstorehelp* \n
-        **!pubstorelookup:** This command is run to look up nearby publix stores. You provide it with a zipcode. \n
-         \`!pubstorelookup 33463\` \n
-        **!pubstoresave:** This command is used to save your store preference. You provide it with a store number. \n
-         \`!pubstoresave 1144\` \n
-        **!pubsubme:** This command will return to you the current sub deal at your saved publix. It will return an error if you do not have a store number saved. \n
-         \`!pubsubme\` \n
-        **!pubsubhelp:** This command displays this help file \n
-        \`!pubsubhelp\`        
-      `
-      );
+      msg.channel.send({
+        embed: {
+          color: 3447003,
+          title: `The PubSubBot has 4 commands, *!pubsubme*, *!pubstorelookup*, *!pubstoresave*, and *!pubstorehelp*`,
+          fields: [
+            {
+              name: "!pubstorelookup",
+              value: `This command is run to look up nearby publix stores. You provide it with a zipcode. \n
+              \`!pubstorelookup 33463\``,
+            },
+            {
+              name: "!pubstoresave",
+              value: `This command is used to save your store preference. You provide it with a store number. \n
+              \`!pubstoresave 1144\` \n`,
+            },
+            {
+              name: "!pubsubme",
+              value: `This command will return to you the current sub deal at your saved publix. It will return an error if you do not have a store number saved. \n
+              \`!pubsubme\` \n`,
+            },
+            {
+              name: "!pubsubhelp",
+              value: `This command displays this help file \n
+              \`!pubsubhelp\` `,
+            },
+          ],
+        },
+      });
 
       break;
   }

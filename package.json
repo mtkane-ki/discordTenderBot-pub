@@ -3,16 +3,15 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
-  "email": "michael@kaneinformatics.io",
-  "url": "https://github.com/mtkane-ki/discordTenderBot-pub",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
     "axios": "^0.21.0",
     "discord.js": "^11.5.1",
-    "dotenv": "^8.2.0"
+    "dotenv": "^8.2.0",
+    "he": "^1.2.0"
   },
-  "author": "Michael Kane",
-  "license": "Apache-2.0"
+  "author": "",
+  "license": "ISC"
 }
