@@ -32,7 +32,7 @@ bot.on("message", async (msg) => {
       const user = await userActions.getUser(users, msg.author.id);
       if (user === undefined) {
         msg.reply(
-          "I'm sorry, I don't know what your preferred store number is. Please submit it with !pubstoresave"
+          "I'm sorry, I don't know what your preferred store number is. Please submit it with !pubstoresave. You can get help using !pubsubhelp"
         );
         break;
       }
@@ -66,7 +66,7 @@ bot.on("message", async (msg) => {
     }
 
     case "pubstorelookup": {
-      if (args.length === 0 || isNaN(ParseInt(args[0]))) {
+      if (args.length === 0 || isNaN(parseInt(args[0]))) {
         msg.reply(
           "Please provide a zip code as an argument with !pubstorelookup"
         );
@@ -79,18 +79,26 @@ bot.on("message", async (msg) => {
         );
         break;
       }
-      msg.reply(
-        `These are the 5 stores nearest your zipcode. Please select a store number, and say "!pubstoresave xxxx", xxxx being your preferred store number`
-      );
-      msg.reply(JSON.stringify(storeRes, null, 2), { code: "JSON" });
+      //console.log(storeRes)
+      const storesEmbed = new Discord.MessageEmbed()
+      storesEmbed.setColor('#0099ff')
+      storesEmbed.setTitle("Stores near you:")
+
+      storeRes.forEach((store) => {
+        storesEmbed.addField(`${store.StoreName}:`, `Store Number: \r\n \`${store.StoreNumber}\` \r\n Store Address: \r\n \`${store.StoreAddress}\` \r\n`)
+      })
+      msg.reply(storesEmbed)
+        
       break;
     }
 
     case "pubstoresave": {
       const users = await userActions.reloadUserStore();
       const user = await userActions.getUser(users, msg.author.id);
-
-      const storeQuery = pubStore.queryStore(args[0]);
+      if (!user) {
+        //console.log("no user found")
+      }
+      const storeQuery = await pubStore.queryStore(args[0]);
       if (!storeQuery) {
         msg.reply(
           `The store number ${args} is invalid. Please try valid store number`
@@ -101,10 +109,23 @@ bot.on("message", async (msg) => {
         msg.reply("Please provide a store number along with this command.");
         break;
       }
-      if (user) {
+      if (user && storeQuery){
+        if (user.storeNumber === args[0]){
+          msg.reply(
+            `Your store number preference of ${args[0]} already exists on your user record. No change has been made.`
+          )
+          break;
+        }
         const writeType = userActions.writeUserStore(msg.author, args[0]);
         msg.reply(
-          `Your store number preference of ${args} has been ${writeType}!`
+          `Your store number preference of ${args[0]} has been ${writeType}!`
+        );
+        break;
+      }
+      if (!user && storeQuery) {
+        const writeType = userActions.writeUserStore(msg.author, args[0]);
+        msg.reply(
+          `Your store number preference of ${args[0]} has been ${writeType}!`
         );
         break;
       }
@@ -119,22 +140,22 @@ bot.on("message", async (msg) => {
           fields: [
             {
               name: "!pubstorelookup",
-              value: `This command is run to look up nearby publix stores. You provide it with a zipcode. \n
+              value: `\n This command is run to look up nearby publix stores. You provide it with a zipcode. 
               \`!pubstorelookup 33463\``,
             },
             {
               name: "!pubstoresave",
-              value: `This command is used to save your store preference. You provide it with a store number. \n
-              \`!pubstoresave 1144\` \n`,
+              value: `\n This command is used to save your store preference. You provide it with a store number. 
+              \`!pubstoresave 1144\` `,
             },
             {
               name: "!pubsubme",
-              value: `This command will return to you the current sub deal at your saved publix. It will return an error if you do not have a store number saved. \n
-              \`!pubsubme\` \n`,
+              value: `\n This command will return to you the current sub deal at your saved publix. It will return an error if you do not have a store number saved. 
+              \`!pubsubme\``,
             },
             {
               name: "!pubsubhelp",
-              value: `This command displays this help file \n
+              value: `\n This command displays this help file 
               \`!pubsubhelp\` `,
             },
           ],
